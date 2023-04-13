@@ -1,4 +1,4 @@
-use reqwest::blocking::Client;
+use reqwest::{blocking::Client, Response};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -30,8 +30,6 @@ struct SoundboardResponse {
     soundboards: Vec<Soundboard>,
     sounds: Vec<Sound>,
 }
-
-///
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Playlist {
@@ -66,7 +64,7 @@ fn get_soundboards(url: &str, client: &Client) -> Result<SoundboardResponse, req
 fn play_soundboard(url: &str, client: &Client, id: &str) -> Result<(), reqwest::Error> {
     let soundboard_url_play = "/v1/soundboard/play";
     let url = format!("{}{}", url, soundboard_url_play);
-    let json_id = json!({ "id": id });
+    let json_id = json!({ "id": id , "volume" : 0.5});
 
     let response = client
         .put(url)
@@ -100,11 +98,60 @@ fn get_playlists(url: &str, client: &Client) -> Result<PlaylistResponse, reqwest
     response.json()
 }
 
+fn playback_play(url: &str, client: &Client) -> Result<(), reqwest::Error> {
+    let play_url = "/v1/playlist/playback/play";
+    let url = format!("{}{}", url, play_url);
+
+    let Response = client.put(url).send()?;
+
+    Ok(())
+}
+
+fn playback_pause(url: &str, client: &Client) -> Result<(), reqwest::Error> {
+    let pause_url = "/v1/playlist/playback/pause";
+    let url = format!("{}{}", url, pause_url);
+
+    let Response = client.put(url).send()?;
+
+    Ok(())
+}
+
+fn playback_next(url: &str, client: &Client) -> Result<(), reqwest::Error> {
+    let next_url = "/v1/playlist/playback/next";
+    let url = format!("{}{}", url, next_url);
+
+    let Response = client.post(url).send()?;
+
+    Ok(())
+}
+
+fn playback_previous(url: &str, client: &Client) -> Result<(), reqwest::Error> {
+    let previous_url = "/v1/playlist/playback/previous";
+    let url = format!("{}{}", url, previous_url);
+
+    let Response = client.post(url).send()?;
+
+    Ok(())
+}
+
+fn playback_mute(url: &str, client: &Client, mute: bool) -> Result<(), reqwest::Error> {
+    let play_url = "/v1/playlist/playback/mute";
+    let url = format!("{}{}", url, play_url);
+    let json_mute = json!({ "mute": mute });
+
+    let Response = client
+        .put(url)
+        .header("Content-Type", "application/json")
+        .json(&json_mute)
+        .send()?;
+
+    Ok(())
+}
+
 fn main() {
     let base_url = "http://127.0.0.1:3333";
     let client = Client::new();
 
-    let test_id = "3d97633e-ae77-4b85-b134-80cb67854137";
-
-    play_playlist(base_url, &client, test_id).unwrap();
+    let sounboard_test = "0461e8c7-c71b-4081-baef-edc8372a4086";
+    let playlist_test = "3d97633e-ae77-4b85-b134-80cb67854137";
 }
