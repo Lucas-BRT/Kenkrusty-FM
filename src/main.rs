@@ -167,10 +167,6 @@ fn playback_volume(url: &str, client: &Client, mut volume: f32) -> Result<(), re
         .json(&json_volume)
         .send()?;
 
-    println!("{}", Response.status());
-    println!("{}", volume);
-    println!("{}", url);
-
     Ok(())
 }
 
