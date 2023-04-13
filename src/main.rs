@@ -148,6 +148,70 @@ fn playback_mute(url: &str, client: &Client, mute: bool) -> Result<(), reqwest::
     Ok(())
 }
 
+fn playback_volume(url: &str, client: &Client, mut volume: f32) -> Result<(), reqwest::Error> {
+    if volume < 0.0 {
+        volume = 0.0;
+    } else if volume > 1.0 {
+        volume = 1.0
+    } else {
+        volume = volume
+    };
+
+    let volume_url = "/v1/playlist/playback/volume";
+    let url = format!("{}{}", url, volume_url);
+    let json_volume = json!({ "volume": volume });
+
+    let Response = client
+        .put(&url)
+        .header("Content-Type", "application/json")
+        .json(&json_volume)
+        .send()?;
+
+    println!("{}", Response.status());
+    println!("{}", volume);
+    println!("{}", url);
+
+    Ok(())
+}
+
+fn playback_shuffle(url: &str, client: &Client, shuffle: bool) -> Result<(), reqwest::Error> {
+    let play_url = "/v1/playlist/playback/shuffle";
+    let url = format!("{}{}", url, play_url);
+    let json_shuffle = json!({ "shuffle": shuffle });
+
+    let Response = client
+        .put(url)
+        .header("Content-Type", "application/json")
+        .json(&json_shuffle)
+        .send()?;
+
+    Ok(())
+}
+
+enum Repeat {
+    track,
+    playlist,
+    off,
+}
+
+fn playback_repeat(url: &str, client: &Client, repeat: Repeat) -> Result<(), reqwest::Error> {
+    let play_url = "/v1/playlist/playback/repeat";
+    let url = format!("{}{}", url, play_url);
+    let json_repeat = json!({ "repeat": match repeat {
+        Repeat::track => "track",
+        Repeat::playlist => "playlist",
+        Repeat::off => "off"
+    } });
+
+    let Response = client
+        .put(url)
+        .header("Content-Type", "application/json")
+        .json(&json_repeat)
+        .send()?;
+
+    Ok(())
+}
+
 fn main() {
     let base_url = "http://127.0.0.1:3333";
     let client = Client::new();
