@@ -1,5 +1,6 @@
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Sound {
@@ -53,49 +54,57 @@ struct PlaylistResponse {
     tracks: Vec<Track>,
 }
 
-
-
-
-fn get_soundboards(url:&str, client:&Client) -> Result<SoundboardResponse,reqwest::Error>  {
-
+fn get_soundboards(url: &str, client: &Client) -> Result<SoundboardResponse, reqwest::Error> {
     let soundboard_url = "/v1/soundboard";
-    let url = format!("{}{}",url,soundboard_url);
+    let url = format!("{}{}", url, soundboard_url);
 
     let response = client.get(url).send()?;
 
     response.json()
-
 }
 
-fn get_playlists(url:&str, client:&Client) -> Result<PlaylistResponse,reqwest::Error>  {
-    
+fn play_soundboard(url: &str, client: &Client, id: &str) -> Result<(), reqwest::Error> {
+    let soundboard_url_play = "/v1/soundboard/play";
+    let url = format!("{}{}", url, soundboard_url_play);
+    let json_id = json!({ "id": id });
+
+    let response = client
+        .put(url)
+        .header("Content-Type", "application/json")
+        .json(&json_id)
+        .send()?;
+
+    Ok(())
+}
+
+fn play_playlist(url: &str, client: &Client, id: &str) -> Result<(), reqwest::Error> {
+    let playlist_url_play = "/v1/playlist/play";
+    let url = format!("{}{}", url, playlist_url_play);
+    let json_id = json!({ "id": id });
+
+    let response = client
+        .put(url)
+        .header("Content-Type", "application/json")
+        .json(&json_id)
+        .send()?;
+
+    Ok(())
+}
+
+fn get_playlists(url: &str, client: &Client) -> Result<PlaylistResponse, reqwest::Error> {
     let playlist_url = "/v1/playlist";
-    let url = format!("{}{}",url,playlist_url);
+    let url = format!("{}{}", url, playlist_url);
 
     let response = client.get(url).send()?;
 
     response.json()
-
 }
-
-
 
 fn main() {
     let base_url = "http://127.0.0.1:3333";
     let client = Client::new();
 
+    let test_id = "3d97633e-ae77-4b85-b134-80cb67854137";
 
-    let soundboards = match get_soundboards(base_url, &client) {
-        Ok(soundboards) => println!("{:#?}", soundboards),
-        Err(err) => eprintln!("Failed to get soundboards: {}", err),
-    };
-
-    let playlists = match get_playlists(base_url, &client) {
-        Ok(playlists) => println!("{:#?}", playlists),
-        Err(err) => eprintln!("Failed to get playlists: {}", err),
-    };
-
-
-
-
+    play_playlist(base_url, &client, test_id).unwrap();
 }
