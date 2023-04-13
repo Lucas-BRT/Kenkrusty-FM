@@ -31,6 +31,6 @@ Pull requests are welcome! If you have any feature requests or bug reports, plea
 
 ## License
 
-Kenkrusty FM is licensed under the MIT License. See the `LICENSE` file for more information.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](/LICENSE) file for details.
 
 
