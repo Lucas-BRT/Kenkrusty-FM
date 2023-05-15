@@ -1,0 +1,47 @@
+.view {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #1e2231;
+}
+
+.card {
+  display: flex;
+  color: white;
+  flex-direction: column;
+  padding: 2em;
+  gap: 1em;
+  background-color: #222639;
+  border-radius: 0.5em;
+  box-shadow: 0px 0px 9px -3px white;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+}
+
+#button {
+  outline: none;
+  background: none;
+  border: 1px solid white;
+  color: white;
+  border-radius: 0.5em;
+  height: 2.5em;
+  cursor: pointer;
+}
+
+#button:hover {
+  background-color: white;
+  color: black;
+  transition: all 250ms;
+}
+
+#button:disabled {
+  background-color: none;
+  border: 1px solid white;
+  opacity: 0.4;
+  pointer-events: none;
+}
