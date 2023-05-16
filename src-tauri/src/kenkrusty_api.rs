@@ -1,7 +1,7 @@
 
 
 #[allow(dead_code)]
-mod controls {
+pub mod controls {
 
     use reqwest::Client;
     use serde::{Deserialize, Serialize};
