@@ -53,8 +53,12 @@ function Form() {
               disabled={ disable }
               onClick={ () => {
                 const { invoke } = window.__TAURI__.tauri
-
-                invoke("__play_playlist", { ip: address.ip, port: address.port})
+                invoke("conection_test", { ip: address.ip, port: address.port})
+                  .then(
+                    (response) => {
+                      console.log(response)
+                    }
+                )
 
                 }
               }

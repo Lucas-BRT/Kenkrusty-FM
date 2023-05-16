@@ -52,13 +52,13 @@ pub struct PlaylistResponse {
     tracks: Vec<Track>,
 }
 
-pub fn get_soundboards(url: &str, client: &Client) -> Result<SoundboardResponse, reqwest::Error> {
+pub async fn get_soundboards(url: &str, client: &reqwest::Client) -> Result<SoundboardResponse, reqwest::Error> {
     let soundboard_url = "/v1/soundboard";
     let url = format!("{}{}", url, soundboard_url);
 
-    let response = client.get(url).send()?;
+    let response = client.get(url).send().await.unwrap();
 
-    response.json()
+    response.json().await
 }
 
 pub async fn play_soundboard(url: &str, client: & reqwest::Client, id: &str) -> Result<(), reqwest::Error> {
