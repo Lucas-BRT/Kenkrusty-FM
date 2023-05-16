@@ -1,36 +1,7 @@
-# Kenkrusty FM
+# Tauri + React
 
-Kenkrusty FM is a library for communicating with the Kenku Remote Control, enabling greater control over the Kenku FM.
+This template should help get you started developing with Tauri and React in Vite.
 
-## Features
+## Recommended IDE Setup
 
-- Improved precision in Kenku FM volume control
-- Ability to control track playback through keyboard shortcuts
-- Scheduled track management for automatic playback control over time
-
-## Technologies
-
-- Rust
-- Kenku Remote Control
-
-## Installation
-
-To run Kenkrusty FM, you will need to have Rust installed. Then, clone the repository and run the following command:
-
-```console
-$ cargo run
-```
-
-## API Source
-
-The Kenku FM API was created to provide remote control of the Kenku FM music player. The official documentation for the API can be found on the [Kenku FM](https://www.kenku.fm/docs/using-kenku-remote) website .
-
-## Contributing
-
-Pull requests are welcome! If you have any feature requests or bug reports, please open an issue.
-
-## License
-
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](/LICENSE) file for details.
-
-
+- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)

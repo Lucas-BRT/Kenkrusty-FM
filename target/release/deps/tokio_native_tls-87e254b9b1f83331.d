@@ -1,0 +1,7 @@
+C:\Users\LucasBRT\Documents\GitHub\Kenkrusty-FM\target\release\deps\tokio_native_tls-87e254b9b1f83331.rmeta: C:\Users\LucasBRT\.cargo\registry\src\github.com-1ecc6299db9ec823\tokio-native-tls-0.3.1\src\lib.rs
+
+C:\Users\LucasBRT\Documents\GitHub\Kenkrusty-FM\target\release\deps\libtokio_native_tls-87e254b9b1f83331.rlib: C:\Users\LucasBRT\.cargo\registry\src\github.com-1ecc6299db9ec823\tokio-native-tls-0.3.1\src\lib.rs
+
+C:\Users\LucasBRT\Documents\GitHub\Kenkrusty-FM\target\release\deps\tokio_native_tls-87e254b9b1f83331.d: C:\Users\LucasBRT\.cargo\registry\src\github.com-1ecc6299db9ec823\tokio-native-tls-0.3.1\src\lib.rs
+
+C:\Users\LucasBRT\.cargo\registry\src\github.com-1ecc6299db9ec823\tokio-native-tls-0.3.1\src\lib.rs:
