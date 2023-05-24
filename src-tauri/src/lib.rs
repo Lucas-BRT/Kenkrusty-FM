@@ -52,7 +52,10 @@ pub struct PlaylistResponse {
     tracks: Vec<Track>,
 }
 
-pub async fn get_soundboards(url: &str, client: &reqwest::Client) -> Result<SoundboardResponse, reqwest::Error> {
+pub async fn get_soundboards(
+    url: &str,
+    client: &reqwest::Client,
+) -> Result<SoundboardResponse, reqwest::Error> {
     let soundboard_url = "/v1/soundboard";
     let url = format!("{}{}", url, soundboard_url);
 
@@ -61,18 +64,21 @@ pub async fn get_soundboards(url: &str, client: &reqwest::Client) -> Result<Soun
     response.json().await
 }
 
-pub async fn play_soundboard(url: &str, client: & reqwest::Client, id: &str) -> Result<(), reqwest::Error> {
+pub async fn play_soundboard(
+    url: &str,
+    client: &reqwest::Client,
+    id: &str,
+) -> Result<(), reqwest::Error> {
     let soundboard_url_play = "/v1/soundboard/play";
     let url = format!("{}{}", url, soundboard_url_play);
     let json_id = json!({ "id": id , "volume" : 0.5});
-
-
 
     let response = client
         .put(url)
         .header("Content-Type", "application/json")
         .json(&json_id)
-        .send().await;
+        .send()
+        .await;
 
     Ok(())
 }
@@ -209,19 +215,3 @@ pub fn playback_repeat(url: &str, client: &Client, repeat: Repeat) -> Result<(),
 
     Ok(())
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
