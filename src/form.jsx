@@ -51,17 +51,6 @@ function Form() {
               value="Connect"
               id="button"
               disabled={ disable }
-              onClick={ () => {
-                const { invoke } = window.__TAURI__.tauri
-                invoke("conection_test", { ip: address.ip, port: address.port})
-                  .then(
-                    (response) => {
-                      console.log(response)
-                    }
-                )
-
-                }
-              }
             />
         </div>
     </div>
