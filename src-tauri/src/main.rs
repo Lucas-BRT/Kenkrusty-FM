@@ -4,9 +4,7 @@
 mod kenkrusty_api;
 
 #[tauri::command]
-async fn conection_test(_ip: String, _port: String) {
-    
-}
+async fn conection_test(_ip: String, _port: String) {}
 
 #[tokio::main]
 async fn main() {
