@@ -226,6 +226,28 @@ pub mod controls {
         }
 
         #[derive(Debug, Deserialize, Serialize)]
+        pub struct SoundState {
+
+            id: String,
+            url: String,
+            title: String,
+            #[serde(default)]
+            loop_sound: bool,
+            #[serde(default)]
+            volume: f32,
+            #[serde(default)]
+            fade_in: u32,
+            #[serde(default)]
+            fade_out: u32,
+            #[serde(default)]
+            duration: u32,
+            #[serde(default)]
+            progress: u32
+
+
+        }
+
+        #[derive(Debug, Deserialize, Serialize)]
         pub struct SoundboardResponse {
             soundboards: Vec<Soundboard>,
             sounds: Vec<Sound>,
@@ -250,7 +272,7 @@ pub mod controls {
         ) -> Result<(), reqwest::Error> {
             let soundboard_url_play = "/v1/soundboard/play";
             let url = format!("{}{}", url, soundboard_url_play);
-            let json_id = json!({ "id": id , "volume" : 0.5});
+            let json_id = json!({ "id": id });
 
             client
                 .put(url)
@@ -263,10 +285,44 @@ pub mod controls {
             Ok(())
         }
 
-        pub async fn stop_soundboard(url: &str, client: &reqwest::Client, id: &str) {}
+        pub async fn stop_sounboard(
+            url: &str,
+            client: &reqwest::Client,
+            id: &str,
+        ) -> Result<(),reqwest::Error> {
 
-        pub async fn get_soundboard_playback_state(url: &str, client: &reqwest::Client) {
+            let stop_url = "/v1/soundboard/stop";
+            let url = format!("{}{}",url,stop_url);
+            let json_id = json!({ "id": id});
 
+            client
+                .put(url)
+                .header("Content-Type", "application/json")
+                .json(&json_id)
+                .send()
+                .await
+                .unwrap();
+
+            Ok(())
+        }
+
+        pub async fn get_soundboard_playback_state(
+            url: &str,
+            client: &reqwest::Client,
+        ) -> Result<SoundState, reqwest::Error> {
+
+            let playback_url = "/v1/soundboard/playback";
+            let url = format!("{}{}",url,playback_url);
+
+            let response = client
+                .get(url)
+                .send()
+                .await
+                .unwrap();
+
+            response
+                .json()
+                .await
         }
 
 
@@ -276,18 +332,13 @@ pub mod controls {
 }
 
 #[allow(dead_code)]
-pub async fn check_server_availability(ip: String, port: String) -> Result<(), reqwest::Error> {
+pub async fn check_server_availability(ip: &str, port: &str) -> Result<(), reqwest::Error> {
     let playlist_url = format!("http://{}:{}/v1/playlist", ip, port);
     let soundboard_url = format!("http://{}:{}/v1/soundboard", ip, port);
 
     let playlist_response = reqwest::get(playlist_url).await?.status() == StatusCode::OK;
     let soundboard_response = reqwest::get(soundboard_url).await?.status() == StatusCode::OK;
 
-    if playlist_response && soundboard_response {
-        println!("Servidor do Kenku FM está disponível!");
-    } else {
-        println!("Servidor do Kenku FM está indisponível.");
-    }
-
     Ok(())
+
 }

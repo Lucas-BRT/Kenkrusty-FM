@@ -3,17 +3,24 @@
 
 mod falcon;
 mod kenku_remote_api;
+mod kenkrusty_api;
+
 use std::thread;
+
 
 #[tauri::command]
 async fn conection_test() {}
 
 #[tokio::main]
 async fn main() {
-    thread::spawn(|| falcon::launch());
     
+    kenkrusty_api::test().await;    
+
+    /* 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![conection_test])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+    */
+
 }
