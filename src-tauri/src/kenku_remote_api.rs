@@ -14,7 +14,7 @@ pub mod controls {
             playlists: Vec<Playlist>,
             tracks: Vec<Track>,
         }
-        
+
         #[derive(Debug, Deserialize, Serialize)]
         struct Playlist {
             id: String,
@@ -203,7 +203,7 @@ pub mod controls {
         use serde_json::json;
 
         #[derive(Debug, Deserialize, Serialize)]
-        struct Soundboard {
+        pub struct Soundboard {
             id: String,
             sounds: Vec<String>,
             background: String,
@@ -211,23 +211,22 @@ pub mod controls {
         }
 
         #[derive(Debug, Deserialize, Serialize)]
-        struct Sound {
-            id: String,
-            url: String,
-            title: String,
+        pub struct Sound {
+            pub id: String,
+            pub url: String,
+            pub title: String,
             #[serde(default)]
-            loop_sound: bool,
+            pub loop_sound: bool,
             #[serde(default)]
-            volume: f32,
+            pub volume: f32,
             #[serde(default)]
-            fade_in: u32,
+            pub fade_in: u32,
             #[serde(default)]
-            fade_out: u32,
+            pub fade_out: u32,
         }
 
         #[derive(Debug, Deserialize, Serialize)]
         pub struct SoundState {
-
             id: String,
             url: String,
             title: String,
@@ -242,15 +241,13 @@ pub mod controls {
             #[serde(default)]
             duration: u32,
             #[serde(default)]
-            progress: u32
-
-
+            progress: f32,
         }
 
         #[derive(Debug, Deserialize, Serialize)]
         pub struct SoundboardResponse {
-            soundboards: Vec<Soundboard>,
-            sounds: Vec<Sound>,
+            pub soundboards: Vec<Soundboard>,
+            pub sounds: Vec<Sound>,
         }
 
         pub async fn get_soundboards(
@@ -289,10 +286,9 @@ pub mod controls {
             url: &str,
             client: &reqwest::Client,
             id: &str,
-        ) -> Result<(),reqwest::Error> {
-
+        ) -> Result<(), reqwest::Error> {
             let stop_url = "/v1/soundboard/stop";
-            let url = format!("{}{}",url,stop_url);
+            let url = format!("{}{}", url, stop_url);
             let json_id = json!({ "id": id});
 
             client
@@ -310,24 +306,13 @@ pub mod controls {
             url: &str,
             client: &reqwest::Client,
         ) -> Result<SoundState, reqwest::Error> {
-
             let playback_url = "/v1/soundboard/playback";
-            let url = format!("{}{}",url,playback_url);
+            let url = format!("{}{}", url, playback_url);
 
-            let response = client
-                .get(url)
-                .send()
-                .await
-                .unwrap();
+            let response = client.get(url).send().await.unwrap();
 
-            response
-                .json()
-                .await
+            response.json().await
         }
-
-
-
-
     }
 }
 
@@ -340,5 +325,4 @@ pub async fn check_server_availability(ip: &str, port: &str) -> Result<(), reqwe
     let soundboard_response = reqwest::get(soundboard_url).await?.status() == StatusCode::OK;
 
     Ok(())
-
 }
