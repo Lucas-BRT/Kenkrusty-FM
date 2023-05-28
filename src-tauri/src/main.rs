@@ -3,20 +3,11 @@
 // Adds suport for async traits
 #![feature(async_fn_in_trait)]
 
-mod falcon;
 mod kenkrusty_api;
-mod kenku_remote_api;
-
-use std::thread;
-
-use reqwest::Client;
-
-#[tauri::command]
-async fn conection_test() {}
 
 #[tokio::main]
 async fn main() {
-    kenkrusty_api::test().await;
+    kenkrusty_api::teste().await;
 
     /*
     tauri::Builder::default()

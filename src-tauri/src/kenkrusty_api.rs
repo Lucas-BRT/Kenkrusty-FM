@@ -1,358 +1,194 @@
-use crate::kenku_remote_api;
 use reqwest::Client;
+use rocket::response;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
-const DEFAULT_ADDRESS: &str = "127.0.0.1";
-const DEFAULT_PORT: &str = "3333";
+#[derive(Debug, Serialize, Deserialize)]
+enum SoundType {
+    Track,
+    Sound,
+}
 
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
-pub enum SoundType {
-    Soundboard,
+#[derive(Debug, Serialize, Deserialize)]
+enum Repeat {
+    #[serde(rename = "track")]
+    Track,
+    #[serde(rename = "playlist")]
     Playlist,
+    #[serde(rename = "off")]
+    Off,
 }
 
-trait SoundPlayer {
-    async fn play(
-        &self,
-        controller: controller::Controller,
-        id: String,
-    ) -> Result<reqwest::Response, reqwest::Error> {
-        let sound_type = match self.get_soundtype() {
-            SoundType::Playlist => "playlist",
-            SoundType::Soundboard => "soundboard",
-        };
+/* ------------------------------------------------------------------------------------------ */
 
-        let json_id = json!({ "id" : id });
-
-        let play_url = format!(
-            "http://{}:{}/{}/{}",
-            controller.address, controller.port, controller.path_v, sound_type
-        );
-
-        controller
-            .sender
-            .put(play_url)
-            .header("Content-Type", "application/json")
-            .json(&json_id)
-            .send()
-            .await
-    }
-    async fn get_duration(&self) -> Option<u32>;
-    async fn get_progress(&self) -> Option<u32>;
-    fn get_soundtype(&self) -> SoundType;
+#[derive(Debug, Deserialize, Serialize)]
+struct Sound {
+    url: String,
+    title: String,
+    id: String,
+    #[serde(rename = "loop")]
+    repeat: bool,
+    volume: f32,
+    #[serde(rename = "fadeIn")]
+    fade_in: u32,
+    #[serde(rename = "fadeOut")]
+    fade_out: u32,
+    #[serde(default)]
+    progress: Option<f32>,
+    #[serde(default)]
+    duration: Option<f32>,
+    #[serde(default)]
+    sound_type: Option<SoundType>,
 }
 
-mod response {
-
-    mod soundboard {
-        pub struct Soundboard {
-            pub id: String,
-            pub sounds: Vec<Sound>,
-            pub background: String,
-            pub title: String,
-        }
-
-        pub struct Sound {
-            pub id: String,
-            pub url: String,
-            pub title: String,
-            pub repeat: bool,
-            pub volume: f32,
-            pub fade_in: u32,
-            pub fade_out: u32,
-        }
-
-        pub struct SoundboardResponse {
-            pub soundboards: Vec<Soundboard>,
-            pub sounds: Vec<Sound>,
-        }
-
-        /* ----------------------------------------------------------------------------------- */
-
-        pub struct SoundPlayback {
-            pub id: String,
-            pub url: String,
-            pub title: String,
-            pub repeat: bool,
-            pub volume: f32,
-            pub fade_in: u32,
-            pub fade_out: u32,
-            pub progress: f32,
-            pub durarion: u32,
-        }
-
-        pub struct SoundPlaybackResponse {
-            pub sounds: Vec<SoundPlayback>,
-        }
-    }
-
-    mod playlist {
-        use crate::kenkrusty_api::playlist;
-
-        pub struct Playlist {
-            pub id: String,
-            pub tracks: Vec<Track>,
-            pub background: String,
-            pub title: String,
-        }
-
-        pub struct Track {
-            pub id: String,
-            pub url: String,
-            pub title: String,
-        }
-
-        pub struct PlaylistResponse {
-            pub playlists: Vec<Playlist>,
-            pub tracks: Vec<Track>,
-        }
-        /* ----------------------------------------------------------------------------------- */
-
-        pub struct TrackPlayback {
-            pub id: String,
-            pub title: String,
-            pub url: String,
-            pub progress: u32,
-            pub duration: u32,
-        }
-
-        pub struct PlaylistPlayback {
-            pub id: String,
-            pub title: String,
-        }
-
-        pub struct PlaylistPlaybackResponse {
-            pub playing: bool,
-            pub volume: f32,
-            pub muted: bool,
-            pub shuffle: bool,
-            pub repeat: playlist::Repeat,
-            pub track: Option<TrackPlayback>,
-            pub playlist: Option<PlaylistPlayback>,
-        }
-    }
+#[derive(Debug, Deserialize, Serialize)]
+struct Soundboard {
+    id: String,
+    background: String,
+    title: String,
+    sounds: Vec<String>,
 }
 
-mod soundcollection {
-
-    use crate::kenkrusty_api::controller::Controller;
-    use crate::kenkrusty_api::playlist::Track;
-    use crate::kenkrusty_api::soundboard::Sound;
-    use reqwest::Client;
-
-    struct SoundCollection {
-        soundboard: Vec<Sound>,
-        playlist: Vec<Track>,
-        controller: Controller,
-    }
-
-    impl SoundCollection {
-        pub fn new() {
-            let controller = Client::new();
-        }
-
-        pub async fn play(id: &str) {}
-    }
+#[derive(Debug, Deserialize, Serialize)]
+struct SoundboardResponse {
+    soundboards: Vec<Soundboard>,
+    sounds: Vec<Sound>,
 }
 
-mod controller {
+/* ------------------------------------------------------------------------------------------ */
 
-    use reqwest::Client;
-
-    pub struct Controller {
-        pub sender: Client,
-        pub address: String,
-        pub port: String,
-        pub path_v: String,
-    }
-
-    impl Controller {
-        fn new(address: String, port: String) -> Controller {
-            let sender = Client::new();
-            let path_v = String::from("v1");
-
-            Controller {
-                sender,
-                address,
-                port,
-                path_v,
-            }
-        }
-    }
+#[derive(Debug, Deserialize, Serialize)]
+struct Playlist {
+    #[serde(default)]
+    id: String,
+    #[serde(default)]
+    background: String,
+    #[serde(default)]
+    title: String,
+    #[serde(default)]
+    tracks: Option<Vec<String>>,
 }
 
-pub mod soundboard {
+#[derive(Debug, Deserialize, Serialize)]
+struct Track {
+    url: String,
+    title: String,
+    id: String,
+    #[serde(default)]
+    sound_type: Option<SoundType>,
+    #[serde(default)]
+    progress: Option<u32>,
+    #[serde(default)]
+    duration: Option<u32>,
+}
 
-    use super::SoundType;
-    use crate::kenku_remote_api::controls::soundboard::SoundboardResponse;
-    use serde::{Deserialize, Serialize};
+#[derive(Debug, Deserialize, Serialize)]
+struct PlaylistResponse {
+    playlists: Vec<Playlist>,
+    tracks: Vec<Track>,
+}
 
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    pub struct Sound {
-        pub local_path: String,
-        pub title: String,
-        pub id: String,
-        pub repeat: bool,
-        pub volume: f32,
-        pub fadein: u32,
-        pub fadeout: u32,
-        pub progress: Option<u32>,
-        pub duration: Option<u32>,
-        pub soundtype: SoundType,
+/* ------------------------------------------------------------------------------------------ */
+
+#[derive(Debug, Deserialize, Serialize)]
+struct PlaylistPlaybackResponse {
+    playing: bool,
+    volume: f32,
+    muted: bool,
+    repeat: Repeat,
+    #[serde(default)]
+    track: Option<Track>,
+    #[serde(default)]
+    playlist: Option<Playlist>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct SoundboardPlaybackResponse {
+    sounds: Vec<Sound>,
+}
+
+/* ------------------------------------------------------------------------------------------ */
+
+struct Controller {
+    ip: String,
+    port: String,
+    client: Client,
+    url: String,
+}
+
+impl Controller {
+    pub fn new(ip: String, port: String) -> Controller {
+        let client = Client::new();
+        let url = format!("http://{ip}:{port}");
+        Controller {
+            ip: ip,
+            port: port,
+            client: client,
+            url: url,
+        }
     }
 
-    impl super::SoundPlayer for Sound {
-        async fn get_duration(&self) -> Option<u32> {
-            self.duration
-        }
+    pub async fn get_sounds(&self) -> Result<SoundboardResponse, reqwest::Error> {
+        let sounds_path = "v1/soundboard";
+        let url = format!("{}/{}", self.url, sounds_path);
 
-        async fn get_progress(&self) -> Option<u32> {
-            self.progress
-        }
+        println!("{}",url);
 
-        fn get_soundtype(&self) -> SoundType {
-            self.soundtype
-        }
-    }
-
-    impl Sound {
-        async fn stop(&self) {}
-
-        async fn get_playback(&self) {}
-    }
-
-    pub async fn get_sounds(
-        url: &str,
-        client: &reqwest::Client,
-    ) -> Result<Vec<Sound>, reqwest::Error> {
-        let soundboard_path = "/v1/soundboard";
-        let url = format!("{}{}", url, soundboard_path);
-
-        println!("{url}");
-
-        let response = client
+        let sounds = self
+            .client
             .get(url)
             .send()
-            .await
-            .unwrap()
+            .await?
             .json::<SoundboardResponse>()
             .await?;
 
-        let sounds: Vec<Sound> = response
-            .sounds
-            .iter()
-            .map(|sound| Sound {
-                local_path: sound.url.clone(),
-                title: sound.title.clone(),
-                id: sound.id.clone(),
-                repeat: sound.loop_sound,
-                volume: sound.volume,
-                fadein: sound.fade_in,
-                fadeout: sound.fade_out,
-                progress: None,
-                duration: None,
-                soundtype: SoundType::Soundboard,
-            })
-            .collect();
-
-        println!("sounds: {:#?}", sounds);
-
         Ok(sounds)
     }
-}
 
-pub mod playlist {
+    pub async fn get_tracks(&self) -> Result<PlaylistResponse, reqwest::Error> {
+        let sounds_path = "v1/playlist";
+        let url = format!("{}/{}", self.url, sounds_path);
 
-    use super::SoundType;
+        let tracks = self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .json::<PlaylistResponse>()
+            .await?;
 
-    pub enum Repeat {
-        Track,
-        Playlist,
-        Off,
-    }
-
-    pub struct Track {
-        pub local_path: String,
-        pub title: String,
-        pub id: String,
-        pub duration: Option<u32>,
-        pub progress: Option<u32>,
-        pub soundtype: SoundType,
-    }
-
-    impl super::SoundPlayer for Track {
-        async fn get_duration(&self) -> Option<u32> {
-            self.duration
-        }
-
-        async fn get_progress(&self) -> Option<u32> {
-            self.progress
-        }
-
-        fn get_soundtype(&self) -> SoundType {
-            self.soundtype
-        }
-    }
-
-    impl Track {
-        async fn pause(&self) {}
-
-        async fn next(&self) {}
-
-        async fn previous(&self) {}
-
-        async fn mute(&self) {}
+        Ok(tracks)
     }
 }
 
-pub mod playback {
+struct MediaBoard {
+    sounds: Vec<Sound>,
+    tracks: Vec<Track>,
+    controller: Controller,
+}
 
-    use crate::kenkrusty_api::playlist::Track;
-    use crate::kenkrusty_api::soundboard::Sound;
-    use crate::kenkrusty_api::SoundType;
+impl MediaBoard {
+    pub async fn new(ip: String, port: String) -> MediaBoard {
+        let controller = Controller::new(ip, port);
 
-    struct Playback {
-        soundboard: Vec<Sound>,
-        playlist: Option<Track>,
-    }
+        let sounds = controller.get_sounds().await.unwrap().sounds;
+        let tracks = controller.get_tracks().await.unwrap().tracks;
 
-    impl Playback {}
-
-    pub async fn get_sounds(
-        url: &str,
-        client: &reqwest::Client,
-    ) -> Result<Vec<Sound>, reqwest::Error> {
-        let playback_url = "/v1/soundboard/playback";
-        let url = format!("{}{}", url, playback_url);
-
-        let response = client.get(url).send().await?.json::<Vec<Sound>>().await?;
-
-        let sounds: Vec<Sound> = response
-            .iter()
-            .map(|sound| Sound {
-                local_path: sound.local_path.as_str().to_string(),
-                title: sound.title.as_str().to_string(),
-                id: sound.id.as_str().to_string(),
-                repeat: sound.repeat,
-                volume: sound.volume,
-                fadein: sound.fadein,
-                fadeout: sound.fadeout,
-                progress: sound.progress,
-                duration: sound.duration,
-                soundtype: SoundType::Soundboard,
-            })
-            .collect();
-
-        Ok(sounds)
+        MediaBoard {
+            sounds: sounds,
+            tracks: tracks,
+            controller: controller,
+        }
     }
 }
 
-pub async fn test() {
-    let url = format!("http://{}:{}", DEFAULT_ADDRESS, DEFAULT_PORT);
-    let client = Client::new();
+pub async fn teste() {
 
-    kenku_remote_api::check_server_availability(DEFAULT_ADDRESS, DEFAULT_PORT)
-        .await
-        .unwrap();
+    let ip = "127.0.0.1".to_string();
+    let port = "3333".to_string();
+
+    let kenkrusty = MediaBoard::new(ip, port).await;
+
+    let response = kenkrusty.sounds;
+
+
 }

@@ -317,12 +317,14 @@ pub mod controls {
 }
 
 #[allow(dead_code)]
-pub async fn check_server_availability(ip: &str, port: &str) -> Result<(), reqwest::Error> {
+pub async fn check_server_availability(ip: &str, port: &str) -> Result<bool, reqwest::Error> {
     let playlist_url = format!("http://{}:{}/v1/playlist", ip, port);
     let soundboard_url = format!("http://{}:{}/v1/soundboard", ip, port);
 
     let playlist_response = reqwest::get(playlist_url).await?.status() == StatusCode::OK;
     let soundboard_response = reqwest::get(soundboard_url).await?.status() == StatusCode::OK;
 
-    Ok(())
+    let viable = playlist_response && soundboard_response;
+
+    Ok(viable)
 }
