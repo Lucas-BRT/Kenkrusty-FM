@@ -1,29 +1,26 @@
 use crate::kenku_remote_api;
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use reqwest::Client;
 
 const DEFAULT_ADDRESS: &str = "127.0.0.1";
 const DEFAULT_PORT: &str = "3333";
 
-
-
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub enum SoundType {
-    soundboard,
-    playlist,
+    Soundboard,
+    Playlist,
 }
 
 trait SoundPlayer {
-
     async fn play(
         &self,
         controller: controller::Controller,
         id: String,
     ) -> Result<reqwest::Response, reqwest::Error> {
         let sound_type = match self.get_soundtype() {
-            SoundType::playlist => "playlist",
-            SoundType::soundboard => "soundboard",
+            SoundType::Playlist => "playlist",
+            SoundType::Soundboard => "soundboard",
         };
 
         let json_id = json!({ "id" : id });
@@ -48,51 +45,93 @@ trait SoundPlayer {
 
 mod response {
 
+    mod soundboard {
+        pub struct Soundboard {
+            pub id: String,
+            pub sounds: Vec<Sound>,
+            pub background: String,
+            pub title: String,
+        }
 
-    pub struct Soundboard {
-        pub id: String,
-        pub sounds: Vec<String>,
-        pub background: String,
-        pub title: String
+        pub struct Sound {
+            pub id: String,
+            pub url: String,
+            pub title: String,
+            pub repeat: bool,
+            pub volume: f32,
+            pub fade_in: u32,
+            pub fade_out: u32,
+        }
+
+        pub struct SoundboardResponse {
+            pub soundboards: Vec<Soundboard>,
+            pub sounds: Vec<Sound>,
+        }
+
+        /* ----------------------------------------------------------------------------------- */
+
+        pub struct SoundPlayback {
+            pub id: String,
+            pub url: String,
+            pub title: String,
+            pub repeat: bool,
+            pub volume: f32,
+            pub fade_in: u32,
+            pub fade_out: u32,
+            pub progress: f32,
+            pub durarion: u32,
+        }
+
+        pub struct SoundPlaybackResponse {
+            pub sounds: Vec<SoundPlayback>,
+        }
     }
 
-    pub struct Sound {
-        pub id: String,
-        pub url: String,
-        pub title: String,
-        pub repeat: bool,
-        pub volume: f32,
-        pub fade_in: u32,
-        pub fade_out: u32,
+    mod playlist {
+        use crate::kenkrusty_api::playlist;
+
+        pub struct Playlist {
+            pub id: String,
+            pub tracks: Vec<Track>,
+            pub background: String,
+            pub title: String,
+        }
+
+        pub struct Track {
+            pub id: String,
+            pub url: String,
+            pub title: String,
+        }
+
+        pub struct PlaylistResponse {
+            pub playlists: Vec<Playlist>,
+            pub tracks: Vec<Track>,
+        }
+        /* ----------------------------------------------------------------------------------- */
+
+        pub struct TrackPlayback {
+            pub id: String,
+            pub title: String,
+            pub url: String,
+            pub progress: u32,
+            pub duration: u32,
+        }
+
+        pub struct PlaylistPlayback {
+            pub id: String,
+            pub title: String,
+        }
+
+        pub struct PlaylistPlaybackResponse {
+            pub playing: bool,
+            pub volume: f32,
+            pub muted: bool,
+            pub shuffle: bool,
+            pub repeat: playlist::Repeat,
+            pub track: Option<TrackPlayback>,
+            pub playlist: Option<PlaylistPlayback>,
+        }
     }
-
-    pub struct SoundboardResponse {
-        pub soundboards: Vec<Soundboard>,
-        pub sounds: Vec<Sound>
-    }
-
-    /* ----------------------------------------------------------------------------------- */
-
-    pub struct Playlist {
-        pub id: String,
-        pub tracks: Vec<Track>,
-        pub background: String,
-        pub title: String
-    }
-
-    pub struct Track {
-        pub id: String,
-        pub url: String,
-        pub title: String
-    }
-
-    pub struct PlaylistResponse {
-        pub playlists: Vec<Playlist>,
-        pub tracks: Vec<Track>
-    }
-
-
-
 }
 
 mod soundcollection {
@@ -213,7 +252,7 @@ pub mod soundboard {
                 fadeout: sound.fade_out,
                 progress: None,
                 duration: None,
-                soundtype: SoundType::soundboard,
+                soundtype: SoundType::Soundboard,
             })
             .collect();
 
@@ -227,6 +266,11 @@ pub mod playlist {
 
     use super::SoundType;
 
+    pub enum Repeat {
+        Track,
+        Playlist,
+        Off,
+    }
 
     pub struct Track {
         pub local_path: String,
@@ -264,8 +308,8 @@ pub mod playlist {
 
 pub mod playback {
 
-    use crate::kenkrusty_api::soundboard::Sound;
     use crate::kenkrusty_api::playlist::Track;
+    use crate::kenkrusty_api::soundboard::Sound;
     use crate::kenkrusty_api::SoundType;
 
     struct Playback {
@@ -282,12 +326,7 @@ pub mod playback {
         let playback_url = "/v1/soundboard/playback";
         let url = format!("{}{}", url, playback_url);
 
-        let response = client
-            .get(url)
-            .send()
-            .await?
-            .json::<Vec<Sound>>()
-            .await?;
+        let response = client.get(url).send().await?.json::<Vec<Sound>>().await?;
 
         let sounds: Vec<Sound> = response
             .iter()
@@ -301,15 +340,13 @@ pub mod playback {
                 fadeout: sound.fadeout,
                 progress: sound.progress,
                 duration: sound.duration,
-                soundtype: SoundType::soundboard,
+                soundtype: SoundType::Soundboard,
             })
             .collect();
 
         Ok(sounds)
     }
 }
-
-
 
 pub async fn test() {
     let url = format!("http://{}:{}", DEFAULT_ADDRESS, DEFAULT_PORT);
@@ -318,6 +355,4 @@ pub async fn test() {
     kenku_remote_api::check_server_availability(DEFAULT_ADDRESS, DEFAULT_PORT)
         .await
         .unwrap();
-
-
 }
