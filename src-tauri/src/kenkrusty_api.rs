@@ -5,7 +5,7 @@ use serde_json::json;
 
 /* ------------------------------------------------------------------------------------------ */
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 enum SoundType {
     Track,
     Sound,
@@ -27,8 +27,8 @@ pub fn repeat_default() -> Repeat {
 
 /* ------------------------------------------------------------------------------------------ */
 
-#[derive(Debug, Deserialize, Serialize)]
-struct Sound {
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Sound {
     url: String,
     title: String,
     id: String,
@@ -77,6 +77,7 @@ impl Sound {
 
         Ok(())
     }
+
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -107,8 +108,8 @@ struct Playlist {
     tracks: Option<Vec<String>>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct Track {
+#[derive(Debug, Deserialize, Serialize,Clone)]
+pub struct Track {
     url: String,
     title: String,
     id: String,
@@ -230,6 +231,7 @@ impl Controller {
             .await?
             .json::<SoundboardResponse>()
             .await?;
+
 
         Ok(sounds)
     }
@@ -376,7 +378,8 @@ pub async fn is_kenku_remote_avaliable(ip: &String, port: &String) -> bool {
 
 /* ------------------------------------------------------------------------------------------ */
 
-struct MediaBoard {
+
+pub struct MediaBoard {
     sounds: Vec<Sound>,
     tracks: Vec<Track>,
     controller: Controller,
@@ -386,8 +389,30 @@ impl MediaBoard {
     pub async fn new(ip: String, port: String) -> MediaBoard {
         let controller = Controller::new(ip, port);
 
-        let sounds = controller.get_sounds().await.unwrap().sounds;
-        let tracks = controller.get_tracks().await.unwrap().tracks;
+        let sounds = controller.get_sounds().await.unwrap().sounds.iter().map(|sound| {
+            Sound { url: (sound.url.clone())
+                , title: (sound.title.clone())
+                , id: (sound.id.clone())
+                , repeat: (sound.repeat)
+                , volume: (sound.volume)
+                , fade_in: (sound.fade_in)
+                , fade_out: (sound.fade_out)
+                , progress: (sound.progress)
+                , duration: (sound.duration)
+                , sound_type: (Some(SoundType::Sound)) }
+        }).collect();
+
+        let tracks = controller.get_tracks().await.unwrap().tracks.iter().map(|track| {
+            Track {
+                url: track.url.clone(),
+                title: track.title.clone(),
+                sound_type: Some(SoundType::Track),
+                id: track.id.clone(),
+                progress: None,
+                duration: None
+            }
+        }
+    ).collect();
 
         MediaBoard {
             sounds: sounds,
@@ -399,6 +424,15 @@ impl MediaBoard {
     fn get_controller(&self) -> Controller {
         self.controller.to_owned()
     }
+
+    pub fn get_sounds(&self) -> Vec<Sound> {
+        self.sounds.to_owned()
+    }
+
+    pub fn get_tracks(&self) -> Vec<Track> {
+        self.tracks.to_owned()
+    }
+
 }
 
 /* ------------------------------------------------------------------------------------------ */
