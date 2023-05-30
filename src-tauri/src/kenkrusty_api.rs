@@ -1,9 +1,9 @@
-use std::thread::sleep;
-
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::time::Duration;
+
+
+/* ------------------------------------------------------------------------------------------ */
 
 #[derive(Debug, Serialize, Deserialize)]
 enum SoundType {
@@ -11,7 +11,7 @@ enum SoundType {
     Sound,
 }
 
-#[derive(Debug, Serialize, Deserialize,Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Repeat {
     #[serde(rename = "track")]
     Track,
@@ -21,11 +21,9 @@ pub enum Repeat {
     Off,
 }
 
-
-pub fn repeat_default() -> Repeat{
+pub fn repeat_default() -> Repeat {
     Repeat::Off
 }
-
 
 /* ------------------------------------------------------------------------------------------ */
 
@@ -53,7 +51,6 @@ impl Sound {
     async fn play(&self, controller: &Controller) -> Result<(), reqwest::Error> {
         let client = controller.get_client();
         let url = format!("{}/soundboard/play", controller.url);
-
         let data = json!( {"id": self.id});
 
         client
@@ -69,7 +66,6 @@ impl Sound {
     async fn stop(&self, controller: &Controller) -> Result<(), reqwest::Error> {
         let client = controller.get_client();
         let url = format!("{}/soundboard/stop", controller.url);
-
         let data = json!( {"id": self.id});
 
         client
@@ -128,10 +124,6 @@ impl Track {
     async fn play(&self, controller: &Controller) -> Result<(), reqwest::Error> {
         let client = controller.get_client();
         let url = format!("{}/playlist/play", controller.url);
-
-        println!("{}", url);
-
-
         let data = json!( {"id": self.id});
 
         client
@@ -173,7 +165,7 @@ struct SoundboardPlaybackResponse {
 
 /* ------------------------------------------------------------------------------------------ */
 
-#[derive(Debug, Deserialize, Serialize,Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 struct Command {
     #[serde(default)]
     mute: bool,
@@ -181,37 +173,25 @@ struct Command {
     shuffle: bool,
     #[serde(default = "repeat_default")]
     repeat: Repeat,
-
 }
 
 impl Command {
     fn new() -> Command {
-
         Command {
             mute: false,
             shuffle: false,
-            repeat: Repeat::Off
+            repeat: Repeat::Off,
         }
-
-
     }
 
+    async fn play_playback(&self, controller: &Controller) -> Result<(), reqwest::Error> {
+        let client = controller.get_client();
+        let url = format!("{}/playlist/play", controller.url);
 
-    async fn play_playback(&self,controller: &Controller) -> Result<(),reqwest::Error> {
-            let client = controller.get_client();
-            let url = format!("{}/playlist/play", controller.url);
-    
-            client
-                .put(url)
-                .send()
-                .await?;
-    
-            Ok(())
+        client.put(url).send().await?;
+
+        Ok(())
     }
-
-
-
-
 }
 
 #[derive(Clone)]
@@ -236,14 +216,13 @@ impl Controller {
             v: v,
             client: client,
             url: url,
-            command: Command::new()
+            command: Command::new(),
         }
     }
 
     pub async fn get_sounds(&self) -> Result<SoundboardResponse, reqwest::Error> {
         let sounds_path = "soundboard";
         let url = format!("{}/{}", self.url, sounds_path);
-
         let sounds = self
             .client
             .get(url)
@@ -258,8 +237,6 @@ impl Controller {
     pub async fn get_tracks(&self) -> Result<PlaylistResponse, reqwest::Error> {
         let tracks_path = "playlist";
         let url = format!("{}/{}", self.url, tracks_path);
-
-
         let tracks = self
             .client
             .get(url)
@@ -279,7 +256,7 @@ impl Controller {
         self.url.to_owned()
     }
 
-    async fn get_playback(&self) -> Result<PlaylistPlaybackResponse,reqwest::Error>  {
+    async fn get_playback(&self) -> Result<PlaylistPlaybackResponse, reqwest::Error> {
         let client = self.get_client();
         let url = format!("{}/playlist/playback", self.get_url());
 
@@ -290,54 +267,49 @@ impl Controller {
             .json::<PlaylistPlaybackResponse>()
             .await?;
 
-        Ok( response )
+        Ok(response)
     }
 
-    async fn play_playback(&self) -> Result<StatusCode,reqwest::Error> {
+    async fn play_playback(&self) -> Result<StatusCode, reqwest::Error> {
         let client = self.get_client();
         let url = format!("{}/playlist/playback/play", self.get_url());
-
-        let response = client
-            .get(url)
-            .send()
-            .await?
-            .status();
+        let response = client.put(url).send().await?.status();
 
         Ok(response)
     }
 
-    async fn pause_playback(&self) -> Result<StatusCode,reqwest::Error> {
+    async fn pause_playback(&self) -> Result<StatusCode, reqwest::Error> {
         let client = self.get_client();
         let url = format!("{}/playlist/playback/pause", self.get_url());
-
-        let response = client
-            .get(url)
-            .send()
-            .await?
-            .status();
+        let response = client.put(url).send().await?.status();
 
         Ok(response)
     }
 
-    async fn next_playback(&self) -> Result<StatusCode,reqwest::Error> {
+    async fn next_playback(&self) -> Result<StatusCode, reqwest::Error> {
         let client = self.get_client();
         let url = format!("{}/playlist/playback/next", self.get_url());
-
-        let response = client
-            .get(url)
-            .send()
-            .await?
-            .status();
+        let response = client.post(url).send().await?.status();
 
         Ok(response)
     }
 
-    async fn previous_playback(&self) -> Result<StatusCode,reqwest::Error> {
+    async fn previous_playback(&self) -> Result<StatusCode, reqwest::Error> {
         let client = self.get_client();
         let url = format!("{}/playlist/playback/previous", self.get_url());
+        let response = client.post(url).send().await?.status();
 
+        Ok(response)
+    }
+
+    async fn mute_playback(&self, mute: bool) -> Result<StatusCode, reqwest::Error> {
+        let client = self.get_client();
+        let url = format!("{}/playlist/playback/mute", self.get_url());
+        let data = json!({ "mute" : mute });
         let response = client
-            .get(url)
+            .put(url)
+            .header("Content-Type", "application/json")
+            .json(&data)
             .send()
             .await?
             .status();
@@ -345,11 +317,53 @@ impl Controller {
         Ok(response)
     }
 
+    async fn volume_playback(&self, volume: f32) -> Result<StatusCode, reqwest::Error> {
+        let client = self.get_client();
+        let url = format!("{}/playlist/playback/volume", self.get_url());
+        let data = json!({ "volume" : volume });
+        let response = client
+            .put(url)
+            .header("Content-Type", "application/json")
+            .json(&data)
+            .send()
+            .await?
+            .status();
 
+        Ok(response)
+    }
 
+    async fn shuffle_playback(&self, shuffle: bool) -> Result<StatusCode, reqwest::Error> {
+        let client = self.get_client();
+        let url = format!("{}/playlist/playback/shuffle", self.get_url());
+        let data = json!({ "shuffle" : shuffle });
+        let response = client
+            .put(url)
+            .header("Content-Type", "application/json")
+            .json(&data)
+            .send()
+            .await?
+            .status();
 
+        Ok(response)
+    }
 
+    async fn repeat_playback(&self, repeat: Repeat) -> Result<StatusCode, reqwest::Error> {
+        let client = self.get_client();
+        let url = format!("{}/playlist/playback/repeat", self.get_url());
+        let data = json!({ "repeat" : repeat });
+        let response = client
+            .put(url)
+            .header("Content-Type", "application/json")
+            .json(&data)
+            .send()
+            .await?
+            .status();
+
+        Ok(response)
+    }
 }
+
+/* ------------------------------------------------------------------------------------------ */
 
 pub async fn is_kenku_remote_avaliable(ip: &String, port: &String) -> bool {
     let kenku_url = format!("http://{ip}:{port}");
@@ -358,11 +372,9 @@ pub async fn is_kenku_remote_avaliable(ip: &String, port: &String) -> bool {
         Ok(_) => true,
         Err(_) => false,
     }
-
-    //    let playlist_online = reqwest::get( format!("{}/playlist",&kenku_url) ).await.unwrap().status() == StatusCode::OK;
-
-    //    soundboard_online && playlist_online
 }
+
+/* ------------------------------------------------------------------------------------------ */
 
 struct MediaBoard {
     sounds: Vec<Sound>,
@@ -389,42 +401,4 @@ impl MediaBoard {
     }
 }
 
-pub async fn teste() {
-    let ip = "127.0.0.1".to_string();
-    let port = "3333".to_string();
-
-    if is_kenku_remote_avaliable(&ip, &port).await {
-        let kenkrusty = MediaBoard::new(ip, port).await;
-
-        println!("{:#?}", kenkrusty.tracks[0]);
-
-        let battle1 = &kenkrusty.tracks[0];
-
-        battle1.play(&kenkrusty.controller).await.unwrap();
-
-
-
-
-
-        
-
-
-
-
-
-        /* 
-        let coruja = &kenkrusty.sounds[1];
-        coruja.play(&kenkrusty.controller).await.unwrap();
-        sleep(Duration::from_secs(5));
-        coruja.stop(&kenkrusty.controller).await.unwrap();
-        */
-
-
-
-
-
-
-    }
-
-
-}
+/* ------------------------------------------------------------------------------------------ */

@@ -7,7 +7,6 @@ mod kenkrusty_api;
 
 #[tokio::main]
 async fn main() {
-    kenkrusty_api::teste().await;
 
     /*
     tauri::Builder::default()
