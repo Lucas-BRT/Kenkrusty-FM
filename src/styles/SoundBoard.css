@@ -1,0 +1,31 @@
+.Page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2em;
+  padding: 2em;
+  background-color: var(--background-dark);
+}
+
+
+.Playlists-Sounds {
+  display: flex;
+  flex-direction: column;
+  width: 35vw;
+  background-color: var(--background-light);
+}
+
+.Playlist {
+
+}
+
+.CustomPlay {
+  display: flex;
+  width: 65vw;
+  background-color: var(--background-light);
+}
