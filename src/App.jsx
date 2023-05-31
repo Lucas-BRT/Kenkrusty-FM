@@ -1,9 +1,15 @@
 import React from 'react';
-import Form from "./form";
+import './styles/App.css';
+import LoginPort from './pages/LoginPort';
+import Soundboard from './pages/Soundboard';
+import { Routes, Route } from 'react-router-dom'
 
 function App() {
   return (
-    <Form/>
+    <Routes>
+      <Route exact path='/' Component={ LoginPort } />
+      <Route path='/playlist' Component={ Soundboard }/>
+    </Routes>
   );
 }
 
