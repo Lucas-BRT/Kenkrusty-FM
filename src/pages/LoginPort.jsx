@@ -8,10 +8,6 @@ function LoginPort() {
     setAddress,
     disable,
     setDisable,
-    playlist,
-    setPlaylist,
-    sounds,
-    setSounds,
   } = useContext(AppContext);
 
   const { invoke } = window.__TAURI__.tauri;
@@ -35,15 +31,9 @@ function LoginPort() {
   };
 
   const connectPort = async () => {
-    const result = checkAddress()
-    if (result) {
-      await invoke("get_sounds", { ip: address.ip, port: address.port }).then((res) => {
-        setSounds(res);
-      });
-      await invoke("get_tracks", { ip: address.ip, port: address.port }).then((res) => {
-        setPlaylist(res);
-      });
-    }
+
+    await invoke("connect", {ip: address.ip , port:address.port});
+  
   };
 
   useEffect(() => {
