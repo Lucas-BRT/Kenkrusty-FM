@@ -1,7 +1,8 @@
 use crate::kenkrusty_api::structs::*;
 use crate::kenku_remote::commands;
+use rocket::State;
 
-pub async fn get_sounds(controller: &Controller) -> Result<Vec<ActionControl>, reqwest::Error> {
+pub async fn get_sounds(controller: &State<Controller>) -> Result<Vec<ActionControl>, reqwest::Error> {
     let response =
         commands::soundboard::get_soundboard(&controller.client, &controller.ip, &controller.port)
             .await?;

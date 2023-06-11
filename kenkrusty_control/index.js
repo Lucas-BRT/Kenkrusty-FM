@@ -52,21 +52,13 @@ class Media {
 function sendCommand(command) {
   switch (command) {
     case 'Play':
-
     break;
-
-
   }
 }
 
-
 async function main() {
-
-  
-  
   let response;
-  
-  
+
   await rocketGet("/media/Sound")
     .then(data => {
       console.log(data)
@@ -83,11 +75,7 @@ async function main() {
   medialist.forEach(element => {
     createButton(element)
   });
-
 }
-
-
-
 
 main()
 

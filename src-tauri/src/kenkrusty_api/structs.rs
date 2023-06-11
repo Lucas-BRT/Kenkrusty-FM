@@ -37,6 +37,7 @@ pub struct ActionControl {
     pub type_commands: Vec<TypeCommand>,
 }
 
+#[derive(Clone)]
 pub struct Controller {
     pub ip: String,
     pub port: String,
@@ -69,3 +70,4 @@ impl Controller {
         dar play
         dar stop
 */
+

@@ -1,5 +1,4 @@
 use std::net::IpAddr;
-use std::str::FromStr;
 
 pub fn get_local_ips() -> Vec<(String, IpAddr)> {
     let addresses = local_ip_address::list_afinet_netifas().unwrap();

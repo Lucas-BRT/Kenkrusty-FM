@@ -1,16 +1,13 @@
 pub mod base;
 pub mod commands;
+use std::sync::Arc;
+
 use crate::kenkrusty_api::structs::Controller;
 use rocket::fs::FileServer;
-
-use include_dir::Dir;
-use std::fs::{self, File};
-use std::io::Write;
-use std::path::{Path, PathBuf};
-
 use self::base::prepare_base;
+use commands::*;
 
-pub fn launch(controller: &Controller) {
+pub fn launch(controller: Controller) {
     let rocket_base = prepare_base();
 
     let handle = tokio::spawn(async {
@@ -20,7 +17,12 @@ pub fn launch(controller: &Controller) {
             .merge(("workers", 4));
 
         rocket::custom(rocket_config)
+            .manage(controller)
             .mount("/", FileServer::from(rocket_base))
+            .mount("/", routes![
+                get_media,
+                play_media
+            ])
             .launch()
             .await
             .unwrap();

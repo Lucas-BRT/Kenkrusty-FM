@@ -6,7 +6,7 @@ use crate::local_ip::get_local_ips;
 pub async fn connect(ip: String, port: String) {
     let controller = Controller::new(ip, port);
 
-    falcon::launch(&controller);
+    falcon::launch(controller);
 }
 
 #[tauri::command]
