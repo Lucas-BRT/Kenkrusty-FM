@@ -1,5 +1,4 @@
 use include_dir::include_dir;
-use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
@@ -34,5 +33,5 @@ pub fn prepare_base() -> PathBuf {
     copy_dir_to_temp(&DIR, temp_dir_path).expect("Failed to copy directory to temporary directory");
     println!("{:#?}", DIR);
     println!("{:#?}", temp_dir);
-    temp_dir.into_path().to_path_buf()
+    temp_dir.into_path()
 }

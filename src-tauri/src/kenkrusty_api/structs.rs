@@ -48,26 +48,6 @@ impl Controller {
     pub fn new(ip: String, port: String) -> Controller {
         let client = Client::new();
 
-        Controller {
-            ip: ip,
-            port: port,
-            client: client,
-        }
+        Controller { ip, port, client }
     }
 }
-
-/*
-    playlists
-        dar play na faixa
-        dar play no playback
-        dar pause no playback
-
-    soundboards
-        dar play na faixa
-        dar stop na faixa
-
-    mediaboard
-        dar play
-        dar stop
-*/
-

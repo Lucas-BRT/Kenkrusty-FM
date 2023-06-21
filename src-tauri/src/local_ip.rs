@@ -5,7 +5,7 @@ pub fn get_local_ips() -> Vec<(String, IpAddr)> {
     let mut ipv4_addresses = Vec::new();
 
     for (string, ip) in addresses {
-        if let IpAddr::V4(_) = ip {
+        if ip.is_ipv4() {
             ipv4_addresses.push((string, ip));
         }
     }

@@ -6,7 +6,6 @@ pub mod kenkrusty_api;
 pub mod kenku_remote;
 pub mod local_ip;
 pub mod tauron;
-
 use tauron::commands::*;
 #[macro_use]
 extern crate rocket;

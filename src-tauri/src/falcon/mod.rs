@@ -1,11 +1,10 @@
 pub mod base;
 pub mod commands;
-use std::sync::Arc;
 
-use crate::kenkrusty_api::structs::Controller;
-use rocket::fs::FileServer;
 use self::base::prepare_base;
+use crate::kenkrusty_api::structs::Controller;
 use commands::*;
+use rocket::fs::FileServer;
 
 pub fn launch(controller: Controller) {
     let rocket_base = prepare_base();
@@ -19,10 +18,7 @@ pub fn launch(controller: Controller) {
         rocket::custom(rocket_config)
             .manage(controller)
             .mount("/", FileServer::from(rocket_base))
-            .mount("/", routes![
-                get_media,
-                play_media
-            ])
+            .mount("/", routes![get_media, play_media])
             .launch()
             .await
             .unwrap();
