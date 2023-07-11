@@ -1,9 +1,9 @@
 {
   "build": {
-    "beforeDevCommand": "npm run build",
-    "beforeBuildCommand": "npm run build",
-    "devPath": "../dist",
-    "distDir": "../dist",
+    "beforeDevCommand": "npm run build && cd ./src-mobile && npm run build --emptyOutDir",
+    "beforeBuildCommand": "npm run build && cd ./src-mobile && npm run build --emptyOutDir",
+    "devPath": "../desktop_UI",
+    "distDir": "../desktop_UI",
     "withGlobalTauri": true
   },
   "package": {
@@ -39,7 +39,7 @@
     "windows": [
       {
         "fullscreen": false,
-        "resizable": true,
+        "resizable": false,
         "title": "kenkrusty-fm",
         "width": 800,
         "height": 600

@@ -57,7 +57,6 @@ pub async fn play_media(id: String, media_type: String, controller: &State<Contr
             )
             .await
             .unwrap();
-            println!("{}", response);
             json!(response.as_str())
         }
         SoundType::Custom => {
@@ -66,6 +65,18 @@ pub async fn play_media(id: String, media_type: String, controller: &State<Contr
             json!(response)
         }
     };
+}
+
+#[get("/kenkuFMState")]
+pub async fn get_kenku_remote_state(controller: &State<Controller>) -> String {
+    let url = format!("http://{}:{}/v1/soundboard", controller.ip, controller.port);
+
+    let response = match controller.client.get(url).send().await {
+        Ok(_) => "200",
+        Err(_) => "404",
+    };
+
+    response.to_string()
 }
 
 pub fn launch(controller: Controller) {
@@ -80,7 +91,7 @@ pub fn launch(controller: Controller) {
         rocket::custom(rocket_config)
             .manage(controller)
             .mount("/", FileServer::from(rocket_base))
-            .mount("/", routes![get_media, play_media])
+            .mount("/", routes![get_media, play_media, get_kenku_remote_state])
             .launch()
             .await
             .unwrap();
