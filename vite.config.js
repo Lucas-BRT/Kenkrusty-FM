@@ -23,5 +23,7 @@ export default defineConfig(async () => ({
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
+    // set the destination path for the compiled files
+    outDir: './desktop_UI',
   },
 }));

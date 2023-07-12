@@ -1,0 +1,63 @@
+@import "../../styles/index.css";
+
+.SoundsFrame {
+
+    align-items: center;
+    justify-content: center;
+    display: grid;
+
+
+    padding: 10px;
+    color: var(--yellow);
+    grid-template-columns: repeat(auto-fit, minmax(30vw, 1fr)); /* Duas colunas com largura de 30% cada */
+
+    gap: 10px;
+
+}
+
+.MediaButton {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    
+    gap: 5%;
+    
+    height: 5em;
+    width: 46.5vw;
+    background-color: var(--white-blue);
+    border-radius: 14px;
+    
+    box-shadow: -1px 3px 10px -1px black;
+    color: rgb(224, 214, 214);
+    overflow: hidden;
+    outline: none;
+    border: none;
+}
+
+.PlayIconContainer {
+    width: 15%;    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.PlayTextContainer {
+    display: inline-block;
+    width: 65%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis ;
+}
+
+
+
+.MediaButton:nth-child(odd) {
+    grid-column: 1;
+}
+
+.MediaButton:nth-child(even) {
+    grid-column: 2;
+}
+
+  
